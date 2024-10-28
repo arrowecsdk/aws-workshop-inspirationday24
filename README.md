@@ -169,7 +169,7 @@ Website
 
 ```bash
 
-
+curl 'https://github.com/arrowecsdk/aws-workshop-inspirationday24/blob/main/noteapp/index.html' > index.html
 
 ```
 

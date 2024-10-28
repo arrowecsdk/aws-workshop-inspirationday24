@@ -36,11 +36,11 @@
     <script>
         // Configure AWS - using EC2 instance role
         AWS.config.update({
-            region: 'YOUR_REGION'  // e.g., 'us-east-1'
+            region: 'eu-central-1'  // e.g., 'us-east-1'
         });
 
         const dynamodb = new AWS.DynamoDB.DocumentClient();
-        const tableName = 'YOUR_TABLE_NAME';
+        const tableName = 'noteapp-table';
 
         // Load notes when page loads
         window.onload = loadNotes;
