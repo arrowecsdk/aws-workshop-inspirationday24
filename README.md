@@ -1,5 +1,12 @@
 # AWS Workshop Inspiration Day 2024
 
+## ToDo
+
+- Create DynamoDB
+- Create Policy for DynamoDB
+- Create VPC
+- Create
+
 ## Config
 
 ### DynamoDB
@@ -58,12 +65,13 @@ Create Role
 
 EC2
 
-Permissions: noteapp-table-Policy
+Permissions:
+
+- noteapp-table-Policy
+- AmazonSSMManagedInstanceCore
 
 Rolename:
-noteapp-table-access
-
-
+noteapp-ec2
 
 ### VPC
 
@@ -94,6 +102,56 @@ No NAT Gateway
 
 No VPC Endpoints
 
+### Security Group
+
+noteapp-natinstance
+
+All from 10.0.0.0/16
+
+### VPC Endpoints
+
+ssm
+ssmmessages
+ec2messages
+
+### EC2 Nat Instance
+
+Create Instance
+
+NatInstance
+Amazon Linux
+64bit x86
+t2.micro 1 core 1 Gb Mem
+New Keypair
+    - name: natinstance
+Network
+    - noteapp-VPC
+    - subnet noteapp-public-1
+    - autoassign public IP
+    - select existing Security Group noteapp-public-security-group
+
+Advanced details
+
+User data:
+
+```bash
+#!/bin/bash
+sudo yum update && sudo yum upgrade -y
+sudo yum install iptables-services -y
+sudo systemctl enable iptables
+sudo systemctl start iptables
+echo net.ipv4.ip_forward=1 | sudo tee -a /etc/sysctl.d/custom-ip-forwarding.conf
+sudo sysctl -p /etc/sysctl.d/custom-ip-forwarding.conf
+sudo /sbin/iptables -t nat -A POSTROUTING -o enX0 -j MASQUERADE
+sudo /sbin/iptables -F FORWARD
+sudo service iptables save
+
+```
+
+Actions / Networking / Change Source/Destination check
+
+Stop
+
 ### EC2
 
 Create Instance
@@ -102,8 +160,7 @@ Host1
 Amazon Linux
 64bit ARM
 t4g.micro 2 core 1 Gb Mem
-New keypair
-    - noteapp
+No keypair
 Network
     - noteapp-VPC
     - subnet noteapp-public-1
@@ -111,11 +168,9 @@ Network
     - select existing Security Group noteapp-public
 
 Advanced details
-    - IAM instance profile
+    - IAM instance profile: noteapp-ec2
 
 Launch Instance
-
-ssh -i "Downloads/noteapp.pem" <ec2-user@ec2-3-76-106-241.eu-central-1.compute.amazonaws.com>
 
 ### Configure EC2
 
@@ -142,38 +197,38 @@ Result:
 Install NodeJS and Website
 
 ```bash
-# 1. Update the system
+
 sudo dnf update -y
 
-# 2. Install Node.js (using Node.js 20, the current LTS)
 sudo dnf install nodejs -y
 
-# 3. Verify installation
 node --version
 npm --version
 
-# 4. Create directory and initialize project
 mkdir note-app
 cd note-app
 npm init -y
 
-# 5. Install dependencies
 npm install express aws-sdk body-parser
 
-# 6. Create directory structure and files
 mkdir public
 
-# 7. Install PM2 globally
 sudo npm install -g pm2
 
-# 8. Start the application with PM2
+curl 'https://raw.githubusercontent.com/arrowecsdk/aws-workshop-inspirationday24/refs/heads/main/noteapp/server.js' > server.js
+
+curl 'https://raw.githubusercontent.com/arrowecsdk/aws-workshop-inspirationday24/refs/heads/main/noteapp/public/index.html' > public/index.html
+
 pm2 start server.js
 
-# 9. Make PM2 start on system boot
-pm2 startup
-# Run the command that PM2 gives you
+pm2 status
 
-# 10. Save the PM2 process list
+pm2 startup
+
+# Run the command that PM2 gives you
+# Like this
+# sudo env PATH=$PATH:/usr/bin /usr/local/lib/node_modules/pm2/bin/pm2 startup systemd -u ec2-user --hp /home/ec2-user
+
 pm2 save
 
 ```
@@ -181,20 +236,15 @@ pm2 save
 Install Nginx
 
 ```bash
-# Install nginx
 sudo dnf install nginx -y
 
-# Start nginx
 sudo systemctl start nginx
 sudo systemctl enable nginx
 
-# Create nginx configuration
 sudo nano /etc/nginx/conf.d/note-app.conf
 
-```
-
-````bash
-Copyserver {
+sudo tee -a /etc/nginx/conf.d/note-app.conf <<EOF
+server {
     listen 80;
     server_name _;  # Replace with your domain if you have one
 
@@ -207,33 +257,14 @@ Copyserver {
         proxy_cache_bypass $http_upgrade;
     }
 }
+EOF
+
+sudo nginx -t
+
+sudo systemctl restart nginx
 
 ```
 
-Test httpd
-
-Get the instance ip
-
-Instance summery
-
-Open a browser and test
-
-"It Works!"
-
-Website
-
-```bash
-
-curl 'https://raw.githubusercontent.com/arrowecsdk/aws-workshop-inspirationday24/refs/heads/main/noteapp/index.html' > index.html
-
-cp index.html /var/www/html/index.html
-
-
-
-```
-
-DynamoDB
-
--table
+### VPC Endpoint
 
 Gateway-Endpoint for DynamoDB
