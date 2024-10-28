@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Note App</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/aws-sdk/2.1048.0/aws-sdk.min.js"></script>
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h1>Simple Note App</h1>
+
+        <!-- Add Note Form -->
+        <div class="row mb-4">
+            <div class="col">
+                <div class="input-group">
+                    <input type="text" id="newNote" class="form-control" placeholder="Enter new note">
+                    <button class="btn btn-primary" onclick="addNote()">Add Note</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notes List -->
+        <div class="row">
+            <div class="col">
+                <ul id="notesList" class="list-group">
+                    <!-- Notes will be populated here -->
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configure AWS - using EC2 instance role
+        AWS.config.update({
+            region: 'YOUR_REGION'  // e.g., 'us-east-1'
+        });
+
+        const dynamodb = new AWS.DynamoDB.DocumentClient();
+        const tableName = 'YOUR_TABLE_NAME';
+
+        // Load notes when page loads
+        window.onload = loadNotes;
+
+        async function loadNotes() {
+            try {
+                const params = {
+                    TableName: tableName
+                };
+
+                const result = await dynamodb.scan(params).promise();
+                const notesList = document.getElementById('notesList');
+                notesList.innerHTML = '';
+
+                result.Items.forEach(note => {
+                    addNoteToList(note);
+                });
+            } catch (error) {
+                console.error('Error loading notes:', error);
+                alert('Error loading notes: ' + error.message);
+            }
+        }
+
+        function addNoteToList(note) {
+            const notesList = document.getElementById('notesList');
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+            li.id = note.id;
+
+            // Create note content (editable)
+            const content = document.createElement('span');
+            content.textContent = note.content;
+            content.onclick = function () {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.value = content.textContent;
+                input.className = 'form-control';
+
+                input.onblur = async function () {
+                    const newContent = input.value;
+                    try {
+                        await updateNote(note.id, newContent);
+                        content.textContent = newContent;
+                        li.replaceChild(content, input);
+                    } catch (error) {
+                        alert('Error updating note: ' + error.message);
+                        li.replaceChild(content, input);
+                    }
+                };
+
+                li.replaceChild(input, content);
+                input.focus();
+            };
+
+            // Create delete button
+            const deleteBtn = document.createElement('button');
+            deleteBtn.className = 'btn btn-danger btn-sm';
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.onclick = () => deleteNote(note.id);
+
+            li.appendChild(content);
+            li.appendChild(deleteBtn);
+            notesList.appendChild(li);
+        }
+
+        async function addNote() {
+            const input = document.getElementById('newNote');
+            const content = input.value.trim();
+
+            if (!content) return;
+
+            const note = {
+                id: Date.now().toString(),
+                content: content
+            };
+
+            try {
+                const params = {
+                    TableName: tableName,
+                    Item: note
+                };
+
+                await dynamodb.put(params).promise();
+                addNoteToList(note);
+                input.value = '';
+            } catch (error) {
+                console.error('Error adding note:', error);
+                alert('Error adding note: ' + error.message);
+            }
+        }
+
+        async function updateNote(id, newContent) {
+            const params = {
+                TableName: tableName,
+                Key: { id: id },
+                UpdateExpression: 'set content = :content',
+                ExpressionAttributeValues: {
+                    ':content': newContent
+                }
+            };
+
+            await dynamodb.update(params).promise();
+        }
+
+        async function deleteNote(id) {
+            try {
+                const params = {
+                    TableName: tableName,
+                    Key: { id: id }
+                };
+
+                await dynamodb.delete(params).promise();
+                document.getElementById(id).remove();
+            } catch (error) {
+                console.error('Error deleting note:', error);
+                alert('Error deleting note: ' + error.message);
+            }
+        }
+    </script>
+</body>
+
+</html>
