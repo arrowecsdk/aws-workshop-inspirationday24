@@ -34,9 +34,14 @@
     </div>
 
     <script>
-        // Configure AWS - using EC2 instance role
+        // Configure AWS with EC2 metadata credentials
         AWS.config.update({
-            region: 'eu-central-1'  // e.g., 'us-east-1'
+            region: 'eu-central-1',  // e.g., 'us-east-1'
+            credentials: new AWS.EC2MetadataCredentials({
+                httpOptions: { timeout: 5000 }, // 5 second timeout
+                maxRetries: 10, // retry 10 times
+                retryDelayOptions: { base: 200 } // 200ms between retries
+            })
         });
 
         const dynamodb = new AWS.DynamoDB.DocumentClient();
