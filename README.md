@@ -139,19 +139,74 @@ Result:
 
 ```
 
-Install Webserver
+Install NodeJS and Website
 
 ```bash
+# 1. Update the system
+sudo dnf update -y
 
-sudo su -
+# 2. Install Node.js (using Node.js 20, the current LTS)
+sudo dnf install nodejs -y
 
-yum update
+# 3. Verify installation
+node --version
+npm --version
 
-yum install httpd -y
+# 4. Create directory and initialize project
+mkdir note-app
+cd note-app
+npm init -y
 
-systemctl enable httpd
+# 5. Install dependencies
+npm install express aws-sdk body-parser
 
-systemctl start httpd
+# 6. Create directory structure and files
+mkdir public
+
+# 7. Install PM2 globally
+sudo npm install -g pm2
+
+# 8. Start the application with PM2
+pm2 start server.js
+
+# 9. Make PM2 start on system boot
+pm2 startup
+# Run the command that PM2 gives you
+
+# 10. Save the PM2 process list
+pm2 save
+
+```
+
+Install Nginx
+
+```bash
+# Install nginx
+sudo dnf install nginx -y
+
+# Start nginx
+sudo systemctl start nginx
+sudo systemctl enable nginx
+
+# Create nginx configuration
+sudo nano /etc/nginx/conf.d/note-app.conf
+
+```
+
+````bash
+Copyserver {
+    listen 80;
+    server_name _;  # Replace with your domain if you have one
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
 
 ```
 
@@ -171,7 +226,9 @@ Website
 
 curl 'https://raw.githubusercontent.com/arrowecsdk/aws-workshop-inspirationday24/refs/heads/main/noteapp/index.html' > index.html
 
-cp index.html 
+cp index.html /var/www/html/index.html
+
+
 
 ```
 
