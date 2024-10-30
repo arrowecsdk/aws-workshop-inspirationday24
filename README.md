@@ -1,6 +1,6 @@
 # AWS Workshop Inspiration Day 2024
 
-## ToDo
+## Agenda
 
 - Create DynamoDB
 - Create Policy for DynamoDB
@@ -55,9 +55,9 @@ Overview / Additional info
     ]
 }
 
-noteapp-table-Policy
-
 ```
+
+Name: noteapp-table-Policy
 
 IAM / Roles
 
@@ -104,15 +104,111 @@ No VPC Endpoints
 
 ### Security Group
 
-noteapp-natinstance
+Create three Security Groups
 
-All from 10.0.0.0/16
+Go to VPC / Security Groups
 
-### VPC Endpoints
+#### First
 
-ssm
-ssmmessages
-ec2messages
+Click "Create Security Group"
+
+name: noteapp-natinstance
+
+Description: Allow localtraffic
+
+Select VPC: noteapp-vpc
+
+Inbound rule:
+
+Add rule:
+
+Type: All Traffic Source: Custom 10.0.0.0/16
+
+Click "Create Security Group"
+
+#### Second
+
+Click "Create Security Group"
+
+name: noteapp-lb
+
+Description: Allow http from anywhere
+
+Select VPC: noteapp-vpc
+
+Inbound rule:
+
+Add rule:
+
+Typr: HTTP Source: Custom 0.0.0.0/0
+
+Click "Create Security Group"
+
+#### Third
+
+Click "Create Security Group"
+
+name: noteapp
+
+Description: Allow http from loadbalancer
+
+Select VPC: noteapp-vpc
+
+Inbound rule:
+
+Add rule:
+
+Type: HTTP Source: Custom: Select the security Group: noteapp-lb
+
+Click "Create Security Group"
+
+### VPC Endpoints SSM
+
+We need three Interface Endpoints for Session Manager
+
+Go to VPC / Endpoints
+
+Create Endpoint
+
+Name: ssm
+
+Type: AWS service
+
+In services Search for: ssm
+
+Select: com.amazonaws.eu-central-1.ssm
+
+VPC: noteapp-vpc
+
+Subnet: Select the two Availability Zones and select the private subnet in each
+
+Security Group: noteapp
+
+Policy: Full access
+
+Create
+
+Create two more for the folling Endpoints
+
+- ssmmessages
+- ec2messages
+
+### VPC Endpoint DynamoDB
+
+Create Endpoint
+
+AWS service
+
+Search: DynamoDB
+
+Select Gateway
+
+Select VPC
+
+Select noteapp-rtb-private1
+Select noteapp-rtb-private2
+
+Full access
 
 ### EC2 Nat Instance
 
@@ -130,9 +226,9 @@ Network
     - autoassign public IP
     - select existing Security Group noteapp-public-security-group
 
-Advanced details
+Advanced details:
 
-User data:
+- User data: Add script
 
 ```bash
 #!/bin/bash
@@ -151,6 +247,23 @@ sudo service iptables save
 Actions / Networking / Change Source/Destination check
 
 Stop
+
+### VPC Route Tables
+
+Update both
+
+noteapp-rtb-private1-eu-central-1a
+noteapp-rtb-private2-eu-central-1b
+
+Edit Routes:
+
+Add route:
+
+0.0.0.0/0
+
+Instance
+
+natinstance
 
 ### EC2
 
@@ -173,6 +286,8 @@ Advanced details
 Launch Instance
 
 ### Configure EC2
+
+Connect using Session Manager
 
 Test table access
 
@@ -197,6 +312,10 @@ Result:
 Install NodeJS and Website
 
 ```bash
+
+sudo su ec2-user
+
+cd /home/ec2-user
 
 sudo dnf update -y
 
@@ -241,9 +360,7 @@ sudo dnf install nginx -y
 sudo systemctl start nginx
 sudo systemctl enable nginx
 
-sudo nano /etc/nginx/conf.d/note-app.conf
-
-sudo tee -a /etc/nginx/conf.d/note-app.conf <<EOF
+sudo tee -a /etc/nginx/conf.d/note-app.conf <<'EOF'
 server {
     listen 80;
     server_name _;  # Replace with your domain if you have one
@@ -265,6 +382,96 @@ sudo systemctl restart nginx
 
 ```
 
-### VPC Endpoint
+### EC2 Instance Host2
 
-Gateway-Endpoint for DynamoDB
+Create the second host
+
+Launch Instance
+
+Host1
+Amazon Linux
+64bit ARM
+t4g.micro 2 core 1 Gb Mem
+No keypair
+Network
+    - noteapp-VPC
+    - subnet noteapp-public-1
+    - autoassign public IP
+    - select existing Security Group noteapp-public
+
+Advanced details
+    - IAM instance profile: noteapp-ec2
+    - User data: add script
+
+```bash
+#!/bin/bash
+dnf update -y
+dnf install nodejs -y
+cd /home/ec2-user
+mkdir -p note-app/public
+chown -R ec2-user:ec2-user note-app
+cd note-app
+sudo -u ec2-user npm init -y
+sudo -u ec2-user npm install express aws-sdk body-parser
+npm install -g pm2
+sudo -u ec2-user curl 'https://raw.githubusercontent.com/arrowecsdk/aws-workshop-inspirationday24/refs/heads/main/noteapp/server.js' > /home/ec2-user/note-app/server.js
+sudo -u ec2-user curl 'https://raw.githubusercontent.com/arrowecsdk/aws-workshop-inspirationday24/refs/heads/main/noteapp/public/index.html' > /home/ec2-user/note-app/public/index.html
+chown -R ec2-user:ec2-user /home/ec2-user/note-app
+cd /home/ec2-user/note-app
+sudo -u ec2-user PM2_HOME=/home/ec2-user/.pm2 pm2 start server.js
+sudo -u ec2-user PM2_HOME=/home/ec2-user/.pm2 pm2 startup systemd -u ec2-user --hp /home/ec2-user
+sudo -u ec2-user PM2_HOME=/home/ec2-user/.pm2 pm2 save
+dnf install nginx -y
+cat > /etc/nginx/conf.d/note-app.conf << 'EOF'
+server {
+    listen 80;
+    server_name _;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+EOF
+rm -f /etc/nginx/conf.d/default.conf
+systemctl start nginx
+systemctl enable nginx
+```
+
+### Load Balancer - security group
+
+Name: noteapp-lb
+
+Description: Allow http
+
+VPC: noteapp-vpc
+
+Inbound Rules: HTTP from 0.0.0.0/0s
+
+### Load Balancer - Target Group
+
+Create Target Group
+
+Target Type: Instances
+
+Name: noteapp-Target
+
+VPN: noteapp-vpc
+
+Select Nodes: host1 and host2
+
+Add as pending below
+
+### Load Balancer - Application Load Balancer
+
+Create Application Load Balancer
+
+name: noteapp-lb
+
+Schema: Internet facing
+
+Network mapping: noteapp-vpc
