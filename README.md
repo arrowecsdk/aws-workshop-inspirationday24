@@ -9,6 +9,10 @@
 
 ## Config
 
+### Region
+
+Select Region: Europe / Stockholm
+
 ### DynamoDB
 
 Go to: DynamoDB
@@ -348,7 +352,7 @@ AMI: Amazon Linux 2023 AMI
 
 Architecture: 64bit (Arm)
 
-Instance Type: t3.micro 1 core 1 Gb Mem
+Instance Type: t4g.micro 2 core 1 Gb Mem
 
 Keypair: Proceed without a key pair
 
@@ -479,20 +483,39 @@ Create the second host
 
 Launch Instance
 
-Host1
-Amazon Linux
-64bit ARM
-t4g.micro 2 core 1 Gb Mem
-No keypair
-Network
-    - noteapp-VPC
-    - subnet noteapp-public-1
-    - autoassign public IP
-    - select existing Security Group noteapp-public
+Go to: EC2
 
-Advanced details
-    - IAM instance profile: noteapp-ec2
-    - User data: add script
+Click: Launch Instance
+
+Name: Host2
+
+Application and OS Images:
+
+OS: Amazon Linux
+
+AMI: Amazon Linux 2023 AMI
+
+Architecture: 64bit (Arm)
+
+Instance Type: t4g.micro 2 core 1 Gb Mem
+
+Keypair: Proceed without a key pair
+
+Network Settings: Click Edit
+
+VPC: Select noteapp-VPC
+
+Subnet: Select noteapp-private-1
+
+Autoassign public IP: Disable
+
+Select existing Security Group: noteapp
+
+Open Advanced details:
+
+In IAM instance profile Select: noteapp-ec2
+
+User data: add script
 
 ```bash
 #!/bin/bash
@@ -531,38 +554,73 @@ EOF
 rm -f /etc/nginx/conf.d/default.conf
 systemctl start nginx
 systemctl enable nginx
+
 ```
 
-### Load Balancer - security group
-
-Name: noteapp-lb
-
-Description: Allow http
-
-VPC: noteapp-vpc
-
-Inbound Rules: HTTP from 0.0.0.0/0s
+Click: Launch Instance
 
 ### Load Balancer - Target Group
 
-Create Target Group
+Go to: EC2
+
+In the left menu Select: Target Groups
+
+Click: Create Target Group
 
 Target Type: Instances
 
 Name: noteapp-Target
 
-VPN: noteapp-vpc
+VPC: noteapp-vpc
 
 Select Nodes: host1 and host2
 
-Add as pending below
+Click: Include as pending below
 
 ### Load Balancer - Application Load Balancer
 
-Create Application Load Balancer
+Go to: EC2
+
+In the left menu Select: Load Balancer
+
+Click: Create Load Balancer
+
+Select: Application Load Balancer
 
 name: noteapp-lb
 
 Schema: Internet facing
 
-Network mapping: noteapp-vpc
+Network mapping:
+
+VPC: noteapp-vpc
+
+In Availability Zones Select:
+
+- eu-north-1a (eun1-az1)
+- eu-north-1b (eun1-az2)
+
+Select both Public Subnets
+
+Security Groups:
+
+Delete: default
+
+Select: noteapp-lb
+
+listeners and Routing:
+
+Select target group: noteapp-target
+
+Leave the rest
+
+Click: Create Load Balancer
+
+In the Details:
+
+Copy DNS name:
+
+### Test Website
+
+Open a new tab in the browser - paste the url and test the web Application
+
