@@ -3,7 +3,7 @@
 ## Agenda
 
 - Create DynamoDB
-- Create Policy for DynamoDB
+- Create Policy and Role for EC2 to access DynamoDB and Session Manager
 - Create VPC
 - Create
 
@@ -11,31 +11,51 @@
 
 ### DynamoDB
 
-Create table
+Go to: DynamoDB
 
-noteapp-table
+Click: Create table
+
+Table name: noteapp-table
 
 partition Key: id
 
+Type: String
+
 Table Settings:
 
-Customize
-DynamoDB Standard
-On-Demand
+Select: Customize setttings
+
+Select: DynamoDB Standard
+
+Select: On-Demand
+
+Leave the rest as default
+
+Click: Create Table
+
+We need the ARN (Amazon Resource Name)
+
+Click on the new table: noteapp-table
+
+Click: Additional info
+
+The Amazon Resource Name (ARN) is in the last part of the section
+
+Copy the ARN and save it in a notepad
 
 ### IAM Policy and Role
 
-IAM / Policy
+Go to: IAM
 
-Create Policy
+In the left menu select: Policies
 
-JSON
+Click: Create Policy
 
-Get the Table arn
+Set Policy editor to: JSON
 
-DynamoDB / Tables / noteapp-table
+Copy below to the Policy editor:
 
-Overview / Additional info
+And change the "Resource" to the ARN you saved before
 
 ```JSON
 {
@@ -57,70 +77,78 @@ Overview / Additional info
 
 ```
 
+Click: Next
+
 Name: noteapp-table-Policy
 
-IAM / Roles
+Click: Create Policy
 
-Create Role
+In the left menu Select: Roles
 
-EC2
+Click: Create Role
 
-Permissions:
+Trusted entity type: AWS Service
+
+Use Case: EC2
+
+Click: Next
+
+Permissions Policies:
+
+Search for and select:
 
 - noteapp-table-Policy
 - AmazonSSMManagedInstanceCore
 
-Rolename:
-noteapp-ec2
+Click: Next
+
+Rolename: noteapp-ec2
+
+Click: Create Role
 
 ### VPC
 
-- public subnet 1
-- public subnet 2
-- private subnet 1
-- private subnet 2
-- security group
-- route table
+Go to: VPC
 
-Create VPC
+Click: Create VPC
 
-VPC and More
+Use: VPC and more
 
-auto-generate
-nodeapp
+Auto-generate: nodeapp
 
-cidr
-10.0.0.0/16
+IPv4 CIDR Block: 10.0.0.0/16
 
-2 Availability Zones
+Number of Availability Zones: 2
 
-2 Public Subnet
+Number of Public Subnet: 2
 
-2 Private Subnet
+Number of Private Subnet: 2
 
 No NAT Gateway
 
 No VPC Endpoints
 
+Click: Create VPC
+
+Click: View VPC
+
 ### Security Group
 
 Create three Security Groups
 
-Go to VPC / Security Groups
+In the left menu click: Security Groups
 
 #### First
 
 Click "Create Security Group"
 
-name: noteapp-natinstance
+Name: noteapp-natinstance
 
 Description: Allow localtraffic
 
 Select VPC: noteapp-vpc
 
-Inbound rule:
-
-Add rule:
+Click Add in Inbound rules
 
 Type: All Traffic Source: Custom 10.0.0.0/16
 
@@ -136,11 +164,9 @@ Description: Allow http from anywhere
 
 Select VPC: noteapp-vpc
 
-Inbound rule:
+Click Add in Inbound rules
 
-Add rule:
-
-Typr: HTTP Source: Custom 0.0.0.0/0
+Type: HTTP Source: Custom 0.0.0.0/0
 
 Click "Create Security Group"
 
@@ -154,11 +180,17 @@ Description: Allow http from loadbalancer
 
 Select VPC: noteapp-vpc
 
-Inbound rule:
-
-Add rule:
+Click Add in Inbound rules
 
 Type: HTTP Source: Custom: Select the security Group: noteapp-lb
+
+Click Add in Inbound rules
+
+Type: HTTPS Source: Custom: 0.0.0.0/0
+
+Click Add in Inbound rules
+
+Type: SSH Source: Custom: 0.0.0.0/0
 
 Click "Create Security Group"
 
@@ -166,9 +198,9 @@ Click "Create Security Group"
 
 We need three Interface Endpoints for Session Manager
 
-Go to VPC / Endpoints
+In the left menu go to: Endpoints
 
-Create Endpoint
+Click: Create Endpoint
 
 Name: ssm
 
@@ -186,7 +218,7 @@ Security Group: noteapp
 
 Policy: Full access
 
-Create
+Click: Create endpoint
 
 Create two more for the folling Endpoints
 
@@ -195,40 +227,65 @@ Create two more for the folling Endpoints
 
 ### VPC Endpoint DynamoDB
 
-Create Endpoint
+Click: Create Endpoint
+
+Name: DynamoDB
 
 AWS service
 
 Search: DynamoDB
 
-Select Gateway
+Select the Gateway service
 
-Select VPC
+VPC: noteapp-vpc
 
-Select noteapp-rtb-private1
-Select noteapp-rtb-private2
+Route Tables:
 
-Full access
+Select the two route tables:
+¨
+
+- noteapp-rtb-private2-eu-north-1b
+- noteapp-rtb-private1-eu-north-1a
+
+Policy: Full access
+
+Click: Create endpoint
 
 ### EC2 Nat Instance
 
-Create Instance
+Create a Nat Instance
 
-NatInstance
-Amazon Linux
-64bit x86
-t2.micro 1 core 1 Gb Mem
-New Keypair
-    - name: natinstance
-Network
-    - noteapp-VPC
-    - subnet noteapp-public-1
-    - autoassign public IP
-    - select existing Security Group noteapp-public-security-group
+Go to: EC2
 
-Advanced details:
+Click: Launch Instance
 
-- User data: Add script
+Name: NatInstance
+
+Application and OS Images:
+
+OS: Amazon Linux
+
+AMI: Amazon Linux 2023 AMI
+
+Architecture: 64bit (x86)
+
+Instance Type: t3.micro 1 core 1 Gb Mem
+
+Keypair: Proceed without a key pair
+
+Network Settings: Click Edit
+
+VPC: Select noteapp-VPC
+
+Subnet: Select noteapp-public-1
+
+Autoassign public IP: Enable
+
+Select existing Security Group: noteapp-natinstance
+
+Open Advanced details:
+
+In User data: Add script
 
 ```bash
 #!/bin/bash
@@ -238,58 +295,92 @@ sudo systemctl enable iptables
 sudo systemctl start iptables
 echo net.ipv4.ip_forward=1 | sudo tee -a /etc/sysctl.d/custom-ip-forwarding.conf
 sudo sysctl -p /etc/sysctl.d/custom-ip-forwarding.conf
-sudo /sbin/iptables -t nat -A POSTROUTING -o enX0 -j MASQUERADE
+sudo /sbin/iptables -t nat -A POSTROUTING -o ens5 -j MASQUERADE
 sudo /sbin/iptables -F FORWARD
 sudo service iptables save
 
 ```
 
-Actions / Networking / Change Source/Destination check
+Select the instance: NatInstance
 
-Stop
+Click: Actions / Networking / Change Source/Destination check
+
+Select: Stop
+
+Click: Save
 
 ### VPC Route Tables
 
-Update both
+Go to: VPC
 
-noteapp-rtb-private1-eu-central-1a
-noteapp-rtb-private2-eu-central-1b
+In the left menu Click: Route Tables
 
-Edit Routes:
+For both private Route Tables:
+
+- noteapp-rtb-private2-eu-north-1b
+- noteapp-rtb-private1-eu-north-1a
+
+Click: Edit Routes
 
 Add route:
 
-0.0.0.0/0
+Destination: 0.0.0.0/0
 
-Instance
+Target: Select Instance
 
-natinstance
+Select: Natinstance
+
+Click: Save Changes
 
 ### EC2
 
-Create Instance
+Go to: EC2
 
-Host1
-Amazon Linux
-64bit ARM
-t4g.micro 2 core 1 Gb Mem
-No keypair
-Network
-    - noteapp-VPC
-    - subnet noteapp-public-1
-    - autoassign public IP
-    - select existing Security Group noteapp-public
+Click: Launch Instance
 
-Advanced details
-    - IAM instance profile: noteapp-ec2
+Name: Host1
 
-Launch Instance
+Application and OS Images:
+
+OS: Amazon Linux
+
+AMI: Amazon Linux 2023 AMI
+
+Architecture: 64bit (Arm)
+
+Instance Type: t3.micro 1 core 1 Gb Mem
+
+Keypair: Proceed without a key pair
+
+Network Settings: Click Edit
+
+VPC: Select noteapp-VPC
+
+Subnet: Select noteapp-private-1
+
+Autoassign public IP: Disable
+
+Select existing Security Group: noteapp
+
+Open Advanced details:
+
+In IAM instance profile Select: noteapp-ec2
+
+Click: Launch Instance
 
 ### Configure EC2
 
-Connect using Session Manager
+Select the instance: Host1
+
+At the top Click: Connect
+
+Select: Session Manager
+
+Click: Connect
 
 Test table access
+
+Run command:
 
 ```bash
 
@@ -297,7 +388,7 @@ aws dynamodb scan --table-name noteapp-table
 
 ```
 
-Result:
+The Result looks like this, if there is connection:
 
 ```bash
 {
