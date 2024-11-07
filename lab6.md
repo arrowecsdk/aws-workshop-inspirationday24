@@ -56,7 +56,8 @@ sudo -u ec2-user curl 'https://raw.githubusercontent.com/arrowecsdk/aws-workshop
 chown -R ec2-user:ec2-user /home/ec2-user/note-app
 cd /home/ec2-user/note-app
 sudo -u ec2-user PM2_HOME=/home/ec2-user/.pm2 pm2 start server.js
-sudo -u ec2-user PM2_HOME=/home/ec2-user/.pm2 pm2 startup systemd -u ec2-user --hp /home/ec2-user
+sudo -u ec2-user PM2_HOME=/home/ec2-user/.pm2 pm2 startup
+sudo env PATH=$PATH:/usr/bin /usr/local/lib/node_modules/pm2/bin/pm2 startup systemd -u ec2-user --hp /home/ec2-user
 sudo -u ec2-user PM2_HOME=/home/ec2-user/.pm2 pm2 save
 dnf install nginx -y
 cat > /etc/nginx/conf.d/note-app.conf << 'EOF'
