@@ -8,7 +8,7 @@ app.use(bodyParser.json());
 app.use(express.static('public')); // Serve static files from 'public' directory
 
 // Configure AWS
-AWS.config.update({ region: 'eu-central-1' });
+AWS.config.update({ region: 'eu-north-1' });
 const dynamodb = new AWS.DynamoDB.DocumentClient();
 const tableName = 'noteapp-table';
 

@@ -2,117 +2,119 @@
 
 ## VPC
 
-Go to: VPC
+Go to: __VPC__
 
-Click: Create VPC
+Click: __Create VPC__
 
-Use: VPC and more
+Use: __VPC and more__
 
-Auto-generate: nodeapp
+Auto-generate: __noteapp__
 
-IPv4 CIDR Block: 10.0.0.0/16
+IPv4 CIDR Block: __10.0.0.0/16__
 
-Number of Availability Zones: 2
+Number of Availability Zones: __2__
 
-Number of Public Subnet: 2
+Number of Public Subnet: __2__
 
-Number of Private Subnet: 2
+Number of Private Subnet: __2__
 
 No NAT Gateway
 
 No VPC Endpoints
 
-Click: Create VPC
+Click: __Create VPC__
 
-Click: View VPC
+Click: __View VPC__
+
+You will get a great view in the __Resource Map__
 
 ## Security Groupz
 
 Create three Security Groups
 
-In the left menu click: Security Groups
+In the left menu click: __Security Groups__
 
 ### SG: noteapp-natinstance
 
-Click "Create Security Group"
+Click: __Create Security Group__
 
-Name: noteapp-natinstance
+Name: __noteapp-natinstance__
 
-Description: Allow localtraffic
+Description: __Allow localtraffic__
 
-Select VPC: noteapp-vpc
+Select VPC: __noteapp-vpc__
 
-Click Add in Inbound rules
+Click __Add__ in Inbound rules
 
-Type: All Traffic Source: Custom 10.0.0.0/16
+Type: __All Traffic__ Source: __Custom 10.0.0.0/16__
 
-Click "Create Security Group"
+Click: __Create Security Group__
 
 ### SG: noteapp-lb
 
-Click "Create Security Group"
+Click: __Create Security Group__
 
-name: noteapp-lb
+name: __noteapp-lb__
 
-Description: Allow http from anywhere
+Description: __Allow http from anywhere__
 
-Select VPC: noteapp-vpc
+Select VPC: __noteapp-vpc__
 
-Click Add in Inbound rules
+Click: __Add__ in Inbound rules
 
-Type: HTTP Source: Custom 0.0.0.0/0
+Type: __HTTP__ Source: __Custom 0.0.0.0/0__
 
-Click "Create Security Group"
+Click: __Create Security Group__
 
 ### SG: noteapp
 
-Click "Create Security Group"
+Click: __Create Security Group__
 
-name: noteapp
+name: __noteapp__
 
-Description: Allow http from loadbalancer
+Description: __Allow http from loadbalancer__
 
-Select VPC: noteapp-vpc
+Select VPC: __noteapp-vpc__
 
-Click Add in Inbound rules
+Click: __Add__ in Inbound rules
 
-Type: HTTP Source: Custom: Select the security Group: noteapp-lb
+Type: __HTTP__ Source: __Custom: Select the security Group: noteapp-lb__
 
-Click Add in Inbound rules
+Click: __Add__ in Inbound rules
 
-Type: HTTPS Source: Custom: 0.0.0.0/0
+Type: __HTTPS__ Source: __Custom: 0.0.0.0/0__
 
-Click Add in Inbound rules
+Click: __Add__ in Inbound rules
 
-Type: SSH Source: Custom: 0.0.0.0/0
+Type: __SSH__ Source: __Custom: 0.0.0.0/0__
 
-Click "Create Security Group"
+Click: __Create Security Group__
 
 ## VPC Endpoints SSM
 
 We need three Interface Endpoints for Session Manager
 
-In the left menu go to: Endpoints
+In the left menu go to: __Endpoints__
 
-Click: Create Endpoint
+Click: __Create Endpoint__
 
-Name: ssm
+Name: __ssm__
 
-Type: AWS service
+Type: __AWS service__
 
-In services Search for: ssm
+In services Search for: __ssm__
 
-Select: com.amazonaws.eu-central-1.ssm
+Select: __com.amazonaws.eu-central-1.ssm__
 
-VPC: noteapp-vpc
+VPC: __noteapp-vpc__
 
-Subnet: Select the two Availability Zones and select the private subnet in each
+Subnet: __Select the two Availability Zones and select the private subnet in each__
 
-Security Group: noteapp
+Security Group: __noteapp__
 
-Policy: Full access
+Policy: __Full access__
 
-Click: Create endpoint
+Click: __Create endpoint__
 
 Create two more for the folling Endpoints
 
@@ -121,28 +123,27 @@ Create two more for the folling Endpoints
 
 ## VPC Endpoint DynamoDB
 
-Click: Create Endpoint
+Click: __Create Endpoint__
 
-Name: DynamoDB
+Name: __DynamoDB__
 
-AWS service
+Type: __AWS service__
 
-Search: DynamoDB
+Search: __DynamoDB__
 
-Select the Gateway service
+Select the __Gateway__ service
 
-VPC: noteapp-vpc
+VPC: __noteapp-vpc__
 
 Route Tables:
 
 Select the two route tables:
-¨
 
 - noteapp-rtb-private2-eu-north-1b
 - noteapp-rtb-private1-eu-north-1a
 
-Policy: Full access
+Policy: __Full access__
 
-Click: Create endpoint
+Click: __Create endpoint__
 
 [Go to Lab 4](lab4.md)

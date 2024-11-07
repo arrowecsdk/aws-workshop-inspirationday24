@@ -2,47 +2,49 @@
 
 ## DynamoDB
 
-Go to: DynamoDB
+Go to: __DynamoDB__
 
-Click: Create table
+Click: __Create table__
 
-Table name: noteapp-table
+Table name: __noteapp-table__
 
-partition Key: id
+partition Key: __id__
 
-Type: String
+Type: __String__
 
 Table Settings:
 
-Select: Customize setttings
+Select: __Customize setttings__
 
-Select: DynamoDB Standard
+Select: __DynamoDB Standard__
 
-Select: On-Demand
+Select: __On-Demand__
 
 Leave the rest as default
 
-Click: Create Table
+Click: __Create Table__
 
-We need the ARN (Amazon Resource Name)
+We need the __ARN__ (Amazon Resource Name)
 
-Click on the new table: noteapp-table
+Click on the new table: __noteapp-table__
 
-Click: Additional info
+Click: __Additional info__
 
 The Amazon Resource Name (ARN) is in the last part of the section
 
-Copy the ARN and save it in a notepad
+It looks like this: __arn:aws:dynamodb:eu-north-1:50xxxxxx1854:table/noteapp-table__
+
+Copy the __ARN__ and save it in a notepad
 
 ## IAM Policy and Role
 
-Go to: IAM
+Go to: __IAM__
 
-In the left menu select: Policies
+In the left menu select: __Policies__
 
-Click: Create Policy
+Click: __Create Policy__
 
-Set Policy editor to: JSON
+Set Policy editor to: __JSON__
 
 Copy below to the Policy editor:
 
@@ -68,21 +70,21 @@ And change the "Resource" to the ARN you saved before
 
 ```
 
-Click: Next
+Click: __Next__
 
-Name: noteapp-table-Policy
+Name: __noteapp-table-Policy__
 
-Click: Create Policy
+Click: __Create Policy__
 
-In the left menu Select: Roles
+In the left menu Select: __Roles__
 
-Click: Create Role
+Click: __Create Role__
 
-Trusted entity type: AWS Service
+Trusted entity type: __AWS Service__
 
-Use Case: EC2
+Use Case: __EC2__
 
-Click: Next
+Click: __Next__
 
 Permissions Policies:
 
@@ -91,10 +93,10 @@ Search for and select:
 - noteapp-table-Policy
 - AmazonSSMManagedInstanceCore
 
-Click: Next
+Click: __Next__
 
-Rolename: noteapp-ec2
+Rolename: __noteapp-ec2__
 
-Click: Create Role
+Click: __Create Role__
 
 [Go to Lab 3](lab3.md)

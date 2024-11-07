@@ -2,39 +2,47 @@
 
 ## Load Balancer - Target Group
 
-Go to: EC2
+Go to: __EC2__
 
-In the left menu Select: Target Groups
+In the left menu Select: __Target Groups__
 
-Click: Create Target Group
+Click: __Create Target Group__
 
-Target Type: Instances
+Target Type: __Instances__
 
-Name: noteapp-Target
+Target group Name: __noteapp-Target__
 
-VPC: noteapp-vpc
+VPC: __noteapp-vpc__
 
-Select Nodes: host1 and host2
+Click: __Next__
 
-Click: Include as pending below
+Available Instances:
+
+Select Nodes: __host1__ and __host2__
+
+Click: __Include as pending below__
+
+Click: __Create Target Group__
 
 ## Load Balancer - Application Load Balancer
 
-Go to: EC2
+Go to: __EC2__
 
-In the left menu Select: Load Balancer
+In the left menu Select: __Load Balancer__
 
-Click: Create Load Balancer
+Click: __Create Load Balancer__
 
-Select: Application Load Balancer
+Select: __Application Load Balancer__
 
-name: noteapp-lb
+Click: __Create__
 
-Schema: Internet facing
+name: __noteapp-lb__
+
+Schema: __Internet facing__
 
 Network mapping:
 
-VPC: noteapp-vpc
+VPC: __noteapp-vpc__
 
 In Availability Zones Select:
 
@@ -45,21 +53,25 @@ Select both Public Subnets
 
 Security Groups:
 
-Delete: default
+Delete: __default__
 
-Select: noteapp-lb
+Select: __noteapp-lb__
 
 listeners and Routing:
 
-Select target group: noteapp-target
+Select target group: __noteapp-target__
 
 Leave the rest
 
-Click: Create Load Balancer
+Click: __Create Load Balancer__
 
 In the Details:
 
 Copy DNS name:
+
+It looks like this __noteapp-lb-xxxxxxxxx.eu-north-1.elb.amazonaws.com__
+
+Wait for the status: __Active__
 
 ## Test Website
 

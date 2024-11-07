@@ -6,39 +6,39 @@ Create the second host
 
 Launch Instance
 
-Go to: EC2
+Go to: __EC2__
 
-Click: Launch Instance
+Click: __Launch Instance__
 
-Name: Host2
+Name: __Host2__
 
 Application and OS Images:
 
-OS: Amazon Linux
+OS: __Amazon Linux__
 
-AMI: Amazon Linux 2023 AMI
+AMI: __Amazon Linux 2023 AMI__
 
-Architecture: 64bit (Arm)
+Architecture: __64bit (Arm)__
 
-Instance Type: t4g.micro 2 core 1 Gb Mem
+Instance Type: __t4g.micro__ 2 core 1 Gb Mem
 
-Keypair: Proceed without a key pair
+Keypair: __Proceed without a key pair__
 
-Network Settings: Click Edit
+Network Settings: __Click Edit__
 
-VPC: Select noteapp-VPC
+VPC: __noteapp-VPC__
 
-Subnet: Select noteapp-private-1
+Subnet: __noteapp-private-2__
 
-Autoassign public IP: Disable
+Autoassign public IP: __Disable__
 
-Select existing Security Group: noteapp
+Select existing Security Group: __noteapp__
 
 Open Advanced details:
 
-In IAM instance profile Select: noteapp-ec2
+In IAM instance profile Select: __noteapp-ec2__
 
-User data: add script
+User data: __add script__
 
 ```bash
 #!/bin/bash
@@ -80,6 +80,6 @@ systemctl enable nginx
 
 ```
 
-Click: Launch Instance
+Click: __Launch Instance__
 
 [Go to Lab 7](lab7.md)

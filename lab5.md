@@ -2,49 +2,49 @@
 
 ## EC2 Host 1
 
-Go to: EC2
+Go to: __EC2__
 
-Click: Launch Instance
+Click: __Launch Instance__
 
-Name: Host1
+Name: __Host1__
 
 Application and OS Images:
 
-OS: Amazon Linux
+OS: __Amazon Linux__
 
-AMI: Amazon Linux 2023 AMI
+AMI: __Amazon Linux 2023 AMI__
 
-Architecture: 64bit (Arm)
+Architecture: __64bit (Arm)__
 
-Instance Type: t4g.micro 2 core 1 Gb Mem
+Instance Type: __t4g.micro__ 2 core 1 Gb Mem
 
-Keypair: Proceed without a key pair
+Keypair: __Proceed without a key pair__
 
-Network Settings: Click Edit
+Network Settings: __Click Edit__
 
-VPC: Select noteapp-VPC
+VPC: __noteapp-VPC__
 
-Subnet: Select noteapp-private-1
+Subnet: __noteapp-private-1__
 
-Autoassign public IP: Disable
+Autoassign public IP: __Disable__
 
-Select existing Security Group: noteapp
+Select existing Security Group: __noteapp__
 
 Open Advanced details:
 
-In IAM instance profile Select: noteapp-ec2
+In IAM instance profile Select: __noteapp-ec2__
 
-Click: Launch Instance
+Click: __Launch Instance__
 
 ## Configure Host 1
 
-Select the instance: Host1
+Select the instance: __Host1__
 
-At the top Click: Connect
+At the top Click: __Connect__
 
-Select: Session Manager
+Select: __Session Manager__
 
-Click: Connect
+Click: __Connect__
 
 Test table access
 
@@ -69,6 +69,8 @@ The Result looks like this, if there is connection:
 ```
 
 Install NodeJS and Website
+
+Go through the next step line by line
 
 ```bash
 
@@ -105,7 +107,8 @@ pm2 startup
 
 # Run the command that PM2 gives you
 # Like this
-# sudo env PATH=$PATH:/usr/bin /usr/local/lib/node_modules/pm2/bin/pm2 startup systemd -u ec2-user --hp /home/ec2-user
+
+sudo env PATH=$PATH:/usr/bin /usr/local/lib/node_modules/pm2/bin/pm2 startup systemd -u ec2-user --hp /home/ec2-user
 
 pm2 save
 

@@ -4,37 +4,37 @@
 
 Create a Nat Instance
 
-Go to: EC2
+Go to: __EC2__
 
-Click: Launch Instance
+Click: __Launch Instance__
 
-Name: NatInstance
+Name: __NatInstance__
 
 Application and OS Images:
 
-OS: Amazon Linux
+OS: __Amazon Linux__
 
-AMI: Amazon Linux 2023 AMI
+AMI: __Amazon Linux 2023 AMI__
 
-Architecture: 64bit (x86)
+Architecture: __64bit (x86)__
 
-Instance Type: t3.micro 1 core 1 Gb Mem
+Instance Type: __t3.micro__ 1 core 1 Gb Mem
 
-Keypair: Proceed without a key pair
+Keypair: __Proceed without a key pair__
 
-Network Settings: Click Edit
+Network Settings: __Click Edit__
 
-VPC: Select noteapp-VPC
+VPC: __noteapp-VPC__
 
-Subnet: Select noteapp-public-1
+Subnet: __noteapp-public-1__
 
-Autoassign public IP: Enable
+Autoassign public IP: __Enable__
 
-Select existing Security Group: noteapp-natinstance
+Select existing Security Group: __noteapp-natinstance__
 
 Open Advanced details:
 
-In User data: Add script
+In User data: __Add script__
 
 ```bash
 #!/bin/bash
@@ -50,35 +50,37 @@ sudo service iptables save
 
 ```
 
-Select the instance: NatInstance
+When the instance is running:
 
-Click: Actions / Networking / Change Source/Destination check
+Select the instance: __NatInstance__
 
-Select: Stop
+Click: __Actions / Networking / Change Source/Destination check__
 
-Click: Save
+Select: __Stop__
+
+Click: __Save__
 
 ## VPC Route Tables
 
-Go to: VPC
+Go to: __VPC__
 
-In the left menu Click: Route Tables
+In the left menu Click: __Route Tables__
 
 For both private Route Tables:
 
 - noteapp-rtb-private2-eu-north-1b
 - noteapp-rtb-private1-eu-north-1a
 
-Click: Edit Routes
+Click: __Edit Routes__
 
-Add route:
+Click: __Add route__
 
-Destination: 0.0.0.0/0
+Destination: __0.0.0.0/0__
 
-Target: Select Instance
+Target: __Select Instance__
 
-Select: Natinstance
+Select: __Natinstance__
 
-Click: Save Changes
+Click: __Save Changes__
 
 [Go to Lab 5](lab5.md)
