@@ -110,6 +110,10 @@ VPC: __noteapp-vpc__
 
 Subnet: __Select the two Availability Zones and select the private subnet in each__
 
+__Note:__
+
+If you cant select the subnets, you need to refresh the page!
+
 Security Group: __noteapp__
 
 Policy: __Full access__
