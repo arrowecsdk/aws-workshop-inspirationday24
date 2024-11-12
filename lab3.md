@@ -104,7 +104,7 @@ Type: __AWS service__
 
 In services Search for: __ssm__
 
-Select: __com.amazonaws.eu-central-1.ssm__
+Select: __com.amazonaws.eu-north-1.ssm__
 
 VPC: __noteapp-vpc__
 
